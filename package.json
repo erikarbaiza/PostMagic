@@ -1,0 +1,30 @@
+{
+  "name": "postmagic",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@clerk/nextjs": "^7.2.3",
+    "@supabase/supabase-js": "^2.104.0",
+    "@tailwindcss/postcss": "^4.2.4",
+    "autoprefixer": "^10.5.0",
+    "clsx": "2.1.1",
+    "lucide-react": "0.469.0",
+    "next": "^15.2.8",
+    "openai": "4.71.1",
+    "postcss": "^8.5.10",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "stripe": "^22.0.2",
+    "tailwind-merge": "2.6.0",
+    "tailwindcss": "^4.2.4"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.14",
+    "typescript": "6.0.3"
+  }
+}
