@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { supabase } from '../../../../lib/supabase';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-03-25.dahlia',
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export const runtime = 'nodejs';
 
@@ -29,78 +27,47 @@ export async function POST(req: NextRequest) {
     switch (event.type) {
       case 'customer.subscription.created':
       case 'customer.subscription.updated': {
-        const subscription = event.data.object as Stripe.Subscription;
+        const subscription: any = event.data.object;
         const customerId = subscription.customer as string;
-
-        const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer;
+        const customer: any = await stripe.customers.retrieve(customerId);
         const userId = customer.metadata?.userId;
-
         if (!userId) break;
-
         const isActive = ['active', 'trialing'].includes(subscription.status);
-
-
-        // Stripe 2025: current_period_end puede venir como número o no existir
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const rawEnd = (subscription as any).current_period_end;
-        let periodEnd: string | null = null;
-        if (rawEnd) {
-          periodEnd = new Date(
-            typeof rawEnd === 'number' ? rawEnd * 1000 : rawEnd
-          ).toISOString();
-        }
-
-        await supabase
-          .from('subscriptions')
-          .upsert({
-            user_id: userId,
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subscription.id,
-            status: isActive ? 'pro' : 'free',
-            current_period_end: periodEnd,
-          });
-
+        const rawEnd = subscription.current_period_end;
+        const periodEnd = rawEnd
+          ? new Date(typeof rawEnd === 'number' ? rawEnd * 1000 : rawEnd).toISOString()
+          : null;
+        await supabase.from('subscriptions').upsert({
+          user_id: userId,
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subscription.id,
+          status: isActive ? 'pro' : 'free',
+          current_period_end: periodEnd,
+        });
         console.log(`[webhook] Usuario ${userId} → ${isActive ? 'PRO ✅' : 'FREE'}`);
         break;
       }
-
       case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription;
+        const subscription: any = event.data.object;
         const customerId = subscription.customer as string;
-
-        const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer;
+        const customer: any = await stripe.customers.retrieve(customerId);
         const userId = customer.metadata?.userId;
-
         if (!userId) break;
-
-        await supabase
-          .from('subscriptions')
-          .update({ status: 'free', stripe_subscription_id: null })
-          .eq('user_id', userId);
-
+        await supabase.from('subscriptions').update({ status: 'free', stripe_subscription_id: null }).eq('user_id', userId);
         console.log(`[webhook] Usuario ${userId} canceló Pro`);
         break;
       }
-
       case 'invoice.payment_failed': {
-        const invoice = event.data.object as Stripe.Invoice;
+        const invoice: any = event.data.object;
         const customerId = invoice.customer as string;
-
-        const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer;
+        const customer: any = await stripe.customers.retrieve(customerId);
         const userId = customer.metadata?.userId;
-
         if (!userId) break;
-
-        await supabase
-          .from('subscriptions')
-          .update({ status: 'free' })
-          .eq('user_id', userId);
-
+        await supabase.from('subscriptions').update({ status: 'free' }).eq('user_id', userId);
         console.log(`[webhook] Pago fallido → Usuario ${userId} → FREE`);
         break;
       }
     }
-
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error('[webhook] Error procesando evento:', error);
