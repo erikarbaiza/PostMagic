@@ -430,7 +430,7 @@ export default function PostMagic() {
               <button style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#e8e4dc', padding: '8px 16px', borderRadius: 8, fontFamily: "'Syne', sans-serif", fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Login</button>
             </SignInButton>
           ) : (
-            <UserButton afterSignOutUrl="/" />
+            <UserButton />
           )}
         </div>
       </nav>
