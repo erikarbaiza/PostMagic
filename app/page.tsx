@@ -929,7 +929,7 @@ export default function PostMagic() {
       >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <Image
-          src="/logo.png"
+          src="/postmagic-logo.png" 
           alt="PostMagic"
           width={34}
           height={34}
